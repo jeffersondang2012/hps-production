@@ -1,4 +1,4 @@
-import { partnerService } from '@/services/core/partner.service';
+import { partnerService } from '../../../services/core/partner.service';
 
 export default async function handler(req) {
   if (req.method !== 'POST') {
