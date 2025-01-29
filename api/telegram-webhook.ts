@@ -1,4 +1,4 @@
-import { partnerService } from '../../../services/core/partner.service';
+import { partnerService } from '../src/services/core/partner.service';
 
 export default async function handler(req) {
   if (req.method !== 'POST') {
@@ -9,19 +9,16 @@ export default async function handler(req) {
     const { message } = await req.json();
     console.log('Received message:', message);
     
-    // Xử lý lệnh /start
     if (message?.text?.startsWith('/start')) {
-      const partnerId = message.text.split(' ')[1]; // Lấy partnerId từ command
+      const partnerId = message.text.split(' ')[1];
       const chatId = message.chat.id;
 
       if (partnerId) {
-        // Cập nhật thông tin partner với chat_id
         await partnerService.update(partnerId, {
           telegramChatId: chatId.toString(),
           notificationPreference: 'TELEGRAM'
         });
 
-        // Gửi tin nhắn xác nhận
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
