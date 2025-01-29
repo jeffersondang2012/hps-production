@@ -1,13 +1,13 @@
-import express from 'express';
-import { env } from '@/config/env';
 import { partnerService } from '@/services/core/partner.service';
 
-const router = express.Router();
+export default async function handler(req) {
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
+  }
 
-router.post('/telegram-webhook', async (req, res) => {
   try {
-    const { message } = req.body;
-    console.log('Received message:', message); // Log để debug
+    const { message } = await req.json();
+    console.log('Received message:', message);
     
     if (message?.text?.startsWith('/start')) {
       const partnerId = message.text.split(' ')[1];
@@ -20,7 +20,7 @@ router.post('/telegram-webhook', async (req, res) => {
         });
 
         // Gửi tin nhắn xác nhận
-        await fetch(`https://api.telegram.org/bot${env.telegram.botToken}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -32,11 +32,15 @@ router.post('/telegram-webhook', async (req, res) => {
       }
     }
 
-    res.status(200).json({ ok: true });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error) {
     console.error('Telegram webhook error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
-});
-
-export default router; 
+} 
