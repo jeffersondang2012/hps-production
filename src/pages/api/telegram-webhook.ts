@@ -1,13 +1,13 @@
-import { env } from '@/config/env';
 import { partnerService } from '@/services/core/partner.service';
 
-export default async function handler(req: any, res: any) {
+export default async function handler(req) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return new Response('Method not allowed', { status: 405 });
   }
 
   try {
-    const { message } = req.body;
+    const { message } = await req.json();
+    console.log('Received message:', message);
     
     // Xử lý lệnh /start
     if (message?.text?.startsWith('/start')) {
@@ -22,11 +22,9 @@ export default async function handler(req: any, res: any) {
         });
 
         // Gửi tin nhắn xác nhận
-        await fetch(`https://api.telegram.org/bot${env.telegram.botToken}/sendMessage`, {
+        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
             text: 'Kết nối thành công! Bạn sẽ nhận được thông báo về các giao dịch qua bot này.',
@@ -36,9 +34,15 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    res.status(200).json({ message: 'OK' });
+    return new Response(JSON.stringify({ ok: true }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
   } catch (error) {
     console.error('Telegram webhook error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    return new Response(JSON.stringify({ error: 'Internal server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 } 
