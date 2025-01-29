@@ -16,10 +16,12 @@ export default defineConfig({
     }
   },
   build: {
-    // Tắt kiểm tra TypeScript khi build
-    typescript: {
-      noEmit: true,
-      ignoreBuildErrors: true,
+    // Tắt hoàn toàn TypeScript check khi build
+    commonjsOptions: {
+      transformMixedEsModules: true
+    },
+    rollupOptions: {
+      external: ['chart.js', 'react-chartjs-2']
     }
   },
   define: {

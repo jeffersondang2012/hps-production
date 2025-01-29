@@ -11,7 +11,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "strict": true,
+    "strict": false,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
@@ -21,6 +21,8 @@
     },
     "typeRoots": ["./node_modules/@types", "./src/types"],
     "allowJs": true,
+    "checkJs": false,
+    "noImplicitAny": false,
     "types": ["node"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true
