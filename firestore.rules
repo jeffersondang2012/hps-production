@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Các functions helper
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasRole(role) {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN';
+    }
+
+    function isManager() {
+      return hasRole('SHAREHOLDER');
+    }
+
+    // Rules cho các collections
+    match /users/{userId} {
+      allow read: if true;  // Cho phép đọc để kiểm tra role khi đăng nhập
+      allow create: if isAuthenticated() && isAdmin();
+      allow update: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    match /production_lines/{lineId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && (isAdmin() || isManager());
+    }
+
+    match /expenses/{expenseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+
+    match /transactions/{transactionId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+
+    match /reports/{reportId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isAuthenticated() && (isAdmin() || isManager());
+      allow create: if isAuthenticated();
+      allow update, delete: if false; // Không cho phép sửa hoặc xóa audit log
+    }
+
+    match /notification_templates/{templateId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    match /notification_settings/{settingId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+
+    match /notification_logs/{logId} {
+      allow read: if isAuthenticated() && (isAdmin() || isManager());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if false; // Không cho phép xóa log
+    }
+
+    // Partners collection rules - sửa theo logic của expenses
+    match /partners/{partnerId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && (isAdmin() || isManager());
+      allow update: if isAuthenticated() && (isAdmin() || isManager());
+      allow delete: if isAdmin();
+    }
+  }
+} 

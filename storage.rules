@@ -1,0 +1,35 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Hàm kiểm tra user đã đăng nhập
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Hàm kiểm tra file size (max 5MB)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Hàm kiểm tra file type
+    function isValidType() {
+      return request.resource.contentType.matches('image/.*') ||
+             request.resource.contentType.matches('application/pdf');
+    }
+
+    // Rules cho thư mục expenses
+    match /expenses/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isValidSize() && isValidType();
+    }
+
+    // Rules cho thư mục avatars
+    match /avatars/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                  request.auth.uid == userId && 
+                  isValidSize() && 
+                  request.resource.contentType.matches('image/.*');
+    }
+  }
+} 
