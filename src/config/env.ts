@@ -6,6 +6,6 @@ export const env = {
     secretKey: process.env.ZALO_SECRET_KEY
   },
   telegram: {
-    botToken: process.env.TELEGRAM_BOT_TOKEN
+    botToken: import.meta.env.VITE_TELEGRAM_BOT_TOKEN || ''
   }
 }; 
