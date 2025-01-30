@@ -1,14 +1,15 @@
-export const config = {
-  runtime: 'edge'
-};
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(req) {
+export default async function handler(
+  req: VercelRequest,
+  res: VercelResponse
+) {
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-    const update = await req.json();
+    const update = await req.body;
     console.log('Received Telegram update:', update);
 
     // Xử lý lệnh /start
@@ -31,10 +32,10 @@ export default async function handler(req) {
       console.log('Telegram API response:', result);
     }
 
-    return Response.json({ ok: true });
+    return res.json({ ok: true });
 
   } catch (error) {
     console.error('Telegram webhook error:', error);
-    return Response.json({ ok: false, error: error.message });
+    return res.status(500).json({ ok: false, error: error.message });
   }
 } 

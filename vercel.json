@@ -8,6 +8,9 @@
   "functions": {
     "src/api/**/*": {
       "runtime": "nodejs18.x"
+    },
+    "src/api/telegram-webhook.ts": {
+      "runtime": "@vercel/node@3.0.0"
     }
   }
 } 
