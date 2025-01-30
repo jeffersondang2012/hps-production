@@ -34,10 +34,27 @@ export default async function handler(
       const chatId = update.message.chat.id;
       const text = update.message.text;
 
-      // Gửi tin nhắn echo để test
+      // Xử lý lệnh /chatid
+      if (text === '/chatid') {
+        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text: `Chat ID của bạn là: ${chatId}`
+          })
+        });
+        return res.json({ ok: true });
+      }
+
+      // Echo tin nhắn khác
       await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           chat_id: chatId,
           text: `Bạn vừa gửi: ${text}`

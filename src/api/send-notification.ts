@@ -10,8 +10,12 @@ export default async function handler(
 
   try {
     const { message } = req.body;
+    console.log('Sending message:', message);
 
-    const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    const url = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+    console.log('API URL:', url);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -24,12 +28,12 @@ export default async function handler(
     });
 
     const result = await response.json();
-    console.log('Telegram response:', result);
-    
+    console.log('Telegram API response:', result);
+
     if (!result.ok) {
       throw new Error(result.description || 'Failed to send message');
     }
-    
+
     return res.json(result);
   } catch (error) {
     console.error('Error sending notification:', error);
