@@ -45,21 +45,7 @@ export default async function handler(
         const partnerSnap = await getDoc(partnerRef);
         
         if (partnerSnap.exists()) {
-          // Kiểm tra xem partner đã được kết nối chưa
-          const partnerData = partnerSnap.data();
-          if (partnerData.telegramChatId) {
-            await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                chat_id: chatId,
-                text: 'Đối tác này đã được kết nối với một tài khoản Telegram khác.'
-              })
-            });
-            return res.json({ ok: true });
-          }
-
-          // Cập nhật partner
+          // Cho phép kết nối lại, bỏ check telegramChatId
           await updateDoc(partnerRef, {
             telegramChatId: chatId.toString(),
             notificationPreference: 'TELEGRAM'
