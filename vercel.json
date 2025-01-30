@@ -6,6 +6,10 @@
       "use": "@vercel/node"
     },
     {
+      "src": "src/api/send-notification.ts", 
+      "use": "@vercel/node"
+    },
+    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { 
@@ -22,7 +26,8 @@
     },
     {
       "src": "/api/send-notification",
-      "dest": "src/api/send-notification.ts"
+      "dest": "src/api/send-notification.ts",
+      "methods": ["POST"]
     },
     {
       "handle": "filesystem"
