@@ -17,12 +17,19 @@ export default async function handler(
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        chat_id: "8544",
-        text: message
+        chat_id: 8544,
+        text: message,
+        parse_mode: 'HTML'
       })
     });
 
     const result = await response.json();
+    console.log('Telegram response:', result);
+    
+    if (!result.ok) {
+      throw new Error(result.description || 'Failed to send message');
+    }
+    
     return res.json(result);
   } catch (error) {
     console.error('Error sending notification:', error);
