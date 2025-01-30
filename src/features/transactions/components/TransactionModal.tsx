@@ -124,37 +124,29 @@ export const TransactionModal: FC<TransactionModalProps> = ({
       });
 
       // Gửi thông báo qua Telegram
-      const partner = partners.find(p => p.id === data.partnerId);
-      if (partner?.telegramChatId) {
-        console.log('Sending notification to:', partner.telegramChatId);
-        
-        const message = `
-🔔 *Thông báo giao dịch mới*
+      const message = `
+🔔 Thông báo giao dịch mới
 
 ${type === 'IN' ? '📥 Nhập hàng' : '📤 Xuất hàng'}
-🚛 Số xe: \`${data.vehicleNumber}\`
-📦 Sản phẩm: \`${data.productName}\`
-📊 Số lượng: \`${data.quantity} ${data.unit}\`
-💰 Thành tiền: \`${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.quantity * data.price)}\`
+🚛 Số xe: ${data.vehicleNumber}
+📦 Sản phẩm: ${data.productName}
+📊 Số lượng: ${data.quantity} ${data.unit}
+💰 Thành tiền: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.quantity * data.price)}
 
-_Vui lòng kiểm tra thông tin và phản hồi nếu có sai sót._
-        `.trim();
+⏰ ${new Date().toLocaleString('vi-VN')}
+      `.trim();
 
-        const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            chat_id: partner.telegramChatId,
-            text: message,
-            parse_mode: 'MarkdownV2'
-          })
-        });
-
-        const result = await response.json();
-        console.log('Telegram API response:', result);
-      }
+      // Gửi thông báo
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          chat_id: "8544", // Chat ID của bạn
+          text: message
+        })
+      });
 
       onClose();
     } catch (error) {
