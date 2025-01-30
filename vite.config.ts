@@ -9,8 +9,13 @@ export default defineConfig({
     host: true
   },
   build: {
-    commonjsOptions: {
-      transformMixedEsModules: true
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: undefined
+      }
     }
   }
 }); 
