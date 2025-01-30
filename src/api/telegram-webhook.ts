@@ -18,7 +18,6 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
-  // Allow GET for webhook verification
   if (req.method === 'GET') {
     return res.status(200).json({ ok: true });
   }
@@ -29,62 +28,26 @@ export default async function handler(
 
   try {
     const update = await req.body;
-    console.log('Received Telegram update:', update);
+    console.log('Received update:', update);
 
-    // Xử lý lệnh /start
-    if (update.message?.text?.startsWith('/start')) {
+    if (update.message?.text) {
       const chatId = update.message.chat.id;
-      const encodedId = update.message.text.split(' ')[1];
-      console.log('Encoded ID:', encodedId);
-      
-      try {
-        // Thêm log để debug
-        console.log('Original command:', update.message.text);
-        console.log('Encoded ID:', encodedId);
-        
-        const partnerId = atob(encodedId);
-        console.log('Decoded ID:', partnerId);
-        
-        const partnerRef = doc(db, 'partners', partnerId);
-        const partnerSnap = await getDoc(partnerRef);
-        console.log('Partner exists:', partnerSnap.exists());
-        
-        if (partnerSnap.exists()) {
-          // Cho phép kết nối lại, bỏ check telegramChatId
-          await updateDoc(partnerRef, {
-            telegramChatId: chatId.toString(),
-            notificationPreference: 'TELEGRAM'
-          });
+      const text = update.message.text;
 
-          await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              chat_id: chatId,
-              text: 'Kết nối thành công! Bạn sẽ nhận được thông báo về các giao dịch qua bot này.'
-            })
-          });
-        } else {
-          throw new Error('Invalid partner ID');
-        }
-      } catch (error) {
-        console.error('Error in /start command:', error);
-        // Gửi tin nhắn lỗi chi tiết hơn
-        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: `Lỗi khi xử lý: ${error.message}`
-          })
-        });
-      }
+      // Gửi tin nhắn echo để test
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: `Bạn vừa gửi: ${text}`
+        })
+      });
     }
 
     return res.json({ ok: true });
-
   } catch (error) {
-    console.error('Telegram webhook error:', error);
-    return res.status(500).json({ ok: false, error: error.message });
+    console.error('Error:', error);
+    return res.status(500).json({ error: error.message });
   }
 } 
