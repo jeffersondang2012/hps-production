@@ -28,29 +28,26 @@ export default async function handler(req) {
       const chatId = update.message.chat.id;
       
       // Gửi tin nhắn chào
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const response = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           chat_id: chatId,
-          text: 'Xin chào! Tôi là bot của HPS Production. Tôi sẽ gửi thông báo về các giao dịch cho bạn.',
-          parse_mode: 'HTML'
+          text: 'Xin chào! Tôi là bot của HPS Production. Tôi sẽ gửi thông báo về các giao dịch cho bạn.'
         })
       });
+
+      const result = await response.json();
+      console.log('Telegram API response:', result);
     }
 
-    return new Response(JSON.stringify({ ok: true }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    // Phải trả về đúng format mà Telegram yêu cầu
+    return Response.json({ ok: true });
 
   } catch (error) {
     console.error('Telegram webhook error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    });
+    return Response.json({ ok: false, error: error.message });
   }
 } 
