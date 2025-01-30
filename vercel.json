@@ -21,6 +21,10 @@
       "methods": ["POST", "GET"]
     },
     {
+      "src": "/api/send-notification",
+      "dest": "src/api/send-notification.ts"
+    },
+    {
       "handle": "filesystem"
     },
     {

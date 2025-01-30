@@ -123,7 +123,7 @@ export const TransactionModal: FC<TransactionModalProps> = ({
         status: 'COMPLETED'
       });
 
-      // Gửi thông báo qua Telegram
+      // Gửi thông báo qua API endpoint
       const message = `
 🔔 Thông báo giao dịch mới
 
@@ -136,16 +136,12 @@ ${type === 'IN' ? '📥 Nhập hàng' : '📤 Xuất hàng'}
 ⏰ ${new Date().toLocaleString('vi-VN')}
       `.trim();
 
-      // Gửi thông báo
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      await fetch('/api/send-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          chat_id: "8544", // Chat ID của bạn
-          text: message
-        })
+        body: JSON.stringify({ message })
       });
 
       onClose();
