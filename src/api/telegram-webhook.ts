@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, updateDoc } from 'firebase/firestore';
+import { getFirestore, doc, updateDoc, getDoc } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY,
@@ -34,33 +34,56 @@ export default async function handler(
     // Xử lý lệnh /start
     if (update.message?.text?.startsWith('/start')) {
       const chatId = update.message.chat.id;
-      const partnerId = update.message.text.split(' ')[1]; // Lấy partnerId từ command, ví dụ: /start ABC123
-
-      if (partnerId) {
-        // Cập nhật partner với chat ID
+      const encodedId = update.message.text.split(' ')[1];
+      
+      try {
+        // Giải mã partnerId
+        const partnerId = atob(encodedId);
+        
+        // Kiểm tra xem partner có tồn tại không
         const partnerRef = doc(db, 'partners', partnerId);
-        await updateDoc(partnerRef, {
-          telegramChatId: chatId.toString(),
-          notificationPreference: 'TELEGRAM'
-        });
+        const partnerSnap = await getDoc(partnerRef);
+        
+        if (partnerSnap.exists()) {
+          // Kiểm tra xem partner đã được kết nối chưa
+          const partnerData = partnerSnap.data();
+          if (partnerData.telegramChatId) {
+            await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                chat_id: chatId,
+                text: 'Đối tác này đã được kết nối với một tài khoản Telegram khác.'
+              })
+            });
+            return res.json({ ok: true });
+          }
 
-        // Gửi tin nhắn xác nhận
+          // Cập nhật partner
+          await updateDoc(partnerRef, {
+            telegramChatId: chatId.toString(),
+            notificationPreference: 'TELEGRAM'
+          });
+
+          await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              chat_id: chatId,
+              text: 'Kết nối thành công! Bạn sẽ nhận được thông báo về các giao dịch qua bot này.'
+            })
+          });
+        } else {
+          throw new Error('Invalid partner ID');
+        }
+      } catch (error) {
+        // Gửi tin nhắn lỗi
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            text: 'Kết nối thành công! Bạn sẽ nhận được thông báo về các giao dịch qua bot này.'
-          })
-        });
-      } else {
-        // Nếu không có partnerId, gửi tin nhắn hướng dẫn
-        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: 'Vui lòng sử dụng link kết nối từ trang web để bắt đầu nhận thông báo.'
+            text: 'Link kết nối không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.'
           })
         });
       }

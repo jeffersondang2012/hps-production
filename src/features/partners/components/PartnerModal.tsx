@@ -95,10 +95,9 @@ export const PartnerModal: FC<PartnerModalProps> = ({
   const handleConnectTelegram = () => {
     if (!initialData?.id) return;
     
-    // Mở chat với bot và gửi partnerId
-    const botUsername = 'Catnghien_bot';
-    const startParam = initialData.id;
-    window.open(`https://t.me/${botUsername}?start=${startParam}`, '_blank');
+    // Mã hóa partnerId để tăng tính bảo mật
+    const encodedId = btoa(initialData.id); // Base64 encode
+    window.open(`https://t.me/Catnghien_bot?start=${encodedId}`, '_blank');
   };
 
   const handleFormSubmit = async (data: FormData) => {
