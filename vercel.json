@@ -4,6 +4,11 @@
     {
       "src": "src/api/telegram-webhook.ts",
       "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
     }
   ],
   "routes": [
@@ -11,6 +16,10 @@
       "src": "/api/telegram-webhook",
       "dest": "src/api/telegram-webhook.ts",
       "methods": ["POST", "GET"]
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 } 
