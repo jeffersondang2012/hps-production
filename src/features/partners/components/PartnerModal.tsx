@@ -96,7 +96,9 @@ export const PartnerModal: FC<PartnerModalProps> = ({
     if (!initialData?.id) return;
     
     // Mở chat với bot và gửi partnerId
-    window.open(`https://t.me/Catnghien_bot?start=${initialData.id}`, '_blank');
+    const botUsername = 'Catnghien_bot';
+    const startParam = initialData.id;
+    window.open(`https://t.me/${botUsername}?start=${startParam}`, '_blank');
   };
 
   const handleFormSubmit = async (data: FormData) => {
