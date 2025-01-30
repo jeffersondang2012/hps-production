@@ -105,7 +105,7 @@ export const TransactionModal: FC<TransactionModalProps> = ({
   const handleFormSubmit = async (data: TransactionForm) => {
     try {
       // Tạo giao dịch
-      const transaction = await onSubmit({
+      await onSubmit({
         partnerId: data.partnerId,
         productionLineId: data.productionLineId,
         vehicleNumber: data.vehicleNumber,
@@ -123,28 +123,33 @@ export const TransactionModal: FC<TransactionModalProps> = ({
         status: 'COMPLETED'
       });
 
-      // Gửi thông báo
-      const partner = await partnerService.getById(data.partnerId);
-      if (partner?.notificationPreference !== 'NONE') {
-        const notificationPayload = {
-          partnerId: data.partnerId,
-          transactionType: type,
-          vehicleNumber: data.vehicleNumber,
-          productName: data.productName,
-          quantity: data.quantity,
-          unit: data.unit,
-          total: data.quantity * data.price,
-          createdAt: new Date()
-        };
+      // Gửi thông báo qua Telegram
+      const partner = partners.find(p => p.id === data.partnerId);
+      if (partner?.telegramChatId) {
+        const message = `
+🔔 Thông báo giao dịch mới
 
-        if (partner.notificationPreference === 'ZALO' || partner.notificationPreference === 'BOTH') {
-          await notificationService.sendZaloNotification(notificationPayload);
-        }
+${type === 'IN' ? '📥 Nhập hàng' : '📤 Xuất hàng'}
+🚛 Số xe: ${data.vehicleNumber}
+📦 Sản phẩm: ${data.productName}
+📊 Số lượng: ${data.quantity} ${data.unit}
+💰 Thành tiền: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(data.quantity * data.price)}
 
-        if (partner.notificationPreference === 'TELEGRAM' || partner.notificationPreference === 'BOTH') {
-          await notificationService.sendTelegramNotification(notificationPayload);
-        }
+Vui lòng kiểm tra thông tin và phản hồi nếu có sai sót.
+        `.trim();
+
+        await fetch(`https://api.telegram.org/bot${process.env.VITE_TELEGRAM_BOT_TOKEN}/sendMessage`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            chat_id: partner.telegramChatId,
+            text: message,
+            parse_mode: 'HTML'
+          })
+        });
       }
+
+      onClose();
     } catch (error) {
       console.error('Error:', error);
     }
