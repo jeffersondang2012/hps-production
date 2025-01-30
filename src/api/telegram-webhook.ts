@@ -35,14 +35,19 @@ export default async function handler(
     if (update.message?.text?.startsWith('/start')) {
       const chatId = update.message.chat.id;
       const encodedId = update.message.text.split(' ')[1];
+      console.log('Encoded ID:', encodedId);
       
       try {
-        // Giải mã partnerId
-        const partnerId = atob(encodedId);
+        // Thêm log để debug
+        console.log('Original command:', update.message.text);
+        console.log('Encoded ID:', encodedId);
         
-        // Kiểm tra xem partner có tồn tại không
+        const partnerId = atob(encodedId);
+        console.log('Decoded ID:', partnerId);
+        
         const partnerRef = doc(db, 'partners', partnerId);
         const partnerSnap = await getDoc(partnerRef);
+        console.log('Partner exists:', partnerSnap.exists());
         
         if (partnerSnap.exists()) {
           // Cho phép kết nối lại, bỏ check telegramChatId
@@ -63,13 +68,14 @@ export default async function handler(
           throw new Error('Invalid partner ID');
         }
       } catch (error) {
-        // Gửi tin nhắn lỗi
+        console.error('Error in /start command:', error);
+        // Gửi tin nhắn lỗi chi tiết hơn
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             chat_id: chatId,
-            text: 'Link kết nối không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.'
+            text: `Lỗi khi xử lý: ${error.message}`
           })
         });
       }
