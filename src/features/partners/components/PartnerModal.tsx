@@ -8,6 +8,7 @@ import { Input } from '@/components/atoms/Input';
 import { Select } from '@/components/atoms/Select';
 import { Button } from '@/components/atoms/Button';
 import { env } from '@/config/env';
+import { Icon } from '@/components/atoms/Icon';
 
 const schema = z.object({
   name: z.string().min(1, 'Tên đối tác là bắt buộc'),
@@ -95,8 +96,9 @@ export const PartnerModal: FC<PartnerModalProps> = ({
   const handleConnectTelegram = () => {
     if (!initialData?.id) return;
     
-    // Mã hóa partnerId để tăng tính bảo mật
-    const encodedId = btoa(initialData.id); // Base64 encode
+    // Mã hóa partnerId
+    const encodedId = btoa(initialData.id);
+    // Sử dụng https://t.me thay vì tg://
     window.open(`https://t.me/Catnghien_bot?start=${encodedId}`, '_blank');
   };
 
@@ -177,7 +179,8 @@ export const PartnerModal: FC<PartnerModalProps> = ({
             <Button
               type="button"
               onClick={handleConnectTelegram}
-              className="mt-6"
+              variant="outline"
+              startIcon={<Icon name="ChatBubbleLeftIcon" className="w-5 h-5" />}
             >
               Kết nối Telegram
             </Button>
