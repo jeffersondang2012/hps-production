@@ -21,7 +21,7 @@ export default async function handler(
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        chat_id: 8544,
+        chat_id: 443360666,
         text: message,
         parse_mode: 'HTML'
       })
